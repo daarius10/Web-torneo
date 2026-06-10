@@ -3,14 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Santiago Cup - Sitio Oficial</title>
+<title>Santiago Cup</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 
 <script src="base_datos/config/data-config.js"></script>
 <script src="base_datos/equipos/data-equipos.js"></script>
 <script src="base_datos/partidos/data-partidos.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -22,363 +20,533 @@
     --border:#ffffff14;
     --border2:#ffffff22;
     --accent:#00d4ff;
+    --accent2:#0099cc;
+    --gold:#ffd700;
     --text:#ffffff;
     --text2:#8b9ab5;
     --text3:#4a5568;
-    --gold:#ffd700;
+    --green:#00e676;
+    --red:#ff4757;
+    --yellow:#ffd700;
   }
-  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:2rem;}
-  .container{max-width:1000px;margin:0 auto;}
-  
-  /* ESTILOS ORIGINALES DE LA CABECERA */
-  .header-zone{text-align:center;margin-bottom:3rem;padding:2rem 0;}
-  .header-zone span{color:var(--accent);text-transform:uppercase;font-size:12px;font-weight:800;letter-spacing:2px;}
-  .header-zone h1{font-size:3rem;font-weight:900;letter-spacing:-1px;margin-top:0.5rem;}
-  .header-zone h1 em{color:var(--accent);font-style:normal;}
-  .header-zone p{color:var(--text2);margin-top:1rem;font-size:15px;max-width:500px;margin-left:auto;margin-right:auto;}
-
-  /* CONTADORES EN FILA (EQUIPOS, PARTIDOS, GOLES, GRUPOS) */
-  .stats-counter-row {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    margin-bottom: 3rem;
-    text-align: center;
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+ 
+  /* NAV */
+  nav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;}
+  .nav-logo{display:flex;align-items:center;gap:10px;}
+  .nav-logo .ball{width:32px;height:32px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .nav-logo span{font-weight:700;font-size:18px;letter-spacing:-0.5px;}
+  .nav-logo span em{color:var(--accent);font-style:normal;}
+  nav ul{display:flex;gap:2rem;list-style:none;}
+  nav ul a{color:var(--text2);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s;}
+  nav ul a:hover,nav ul a.active{color:var(--accent);}
+  .nav-admin{background:var(--accent);color:#000!important;padding:8px 16px;border-radius:6px;font-weight:600;font-size:13px;}
+ 
+  /* HERO */
+  .hero{padding:5rem 2rem 4rem;text-align:center;background:radial-gradient(ellipse 80% 60% at 50% -10%, #00d4ff18 0%, transparent 70%);}
+  .hero-badge{display:inline-block;background:var(--accent)18;border:1px solid var(--accent)44;color:var(--accent);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:1.5rem;}
+  .hero h1{font-size:clamp(2.5rem,6vw,5rem);font-weight:900;line-height:1.05;letter-spacing:-2px;margin-bottom:1rem;}
+  .hero h1 span{color:var(--accent);}
+  .hero p{color:var(--text2);font-size:1.1rem;max-width:500px;margin:0 auto 2.5rem;}
+  .hero-stats{display:flex;justify-content:center;gap:3rem;margin-top:3rem;flex-wrap:wrap;}
+  .hero-stat{text-align:center;}
+  .hero-stat .num{font-size:2.5rem;font-weight:900;color:var(--accent);}
+  .hero-stat .lbl{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+ 
+  /* SECTIONS */
+  .section{max-width:1100px;margin:0 auto;padding:3rem 2rem;}
+  .section-header{display:flex;align-items:center;gap:12px;margin-bottom:2rem;}
+  .section-header h2{font-size:1.4rem;font-weight:700;letter-spacing:-0.5px;}
+  .section-header .line{flex:1;height:1px;background:var(--border);}
+  .section-header .badge{background:var(--accent);color:#000;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;}
+ 
+  /* TABS */
+  .tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:4px;margin-bottom:2rem;width:fit-content;}
+  .tab{padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--text2);border:none;background:none;}
+  .tab.active{background:var(--accent);color:#000;}
+ 
+  /* GRUPOS */
+  .groups-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;}
+  .group-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .group-card .group-header{background:var(--accent)15;border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:8px;}
+  .group-card .group-header .group-letter{background:var(--accent);color:#000;width:28px;height:28px;border-radius:6px;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;}
+  .group-card .group-header span{font-weight:700;font-size:14px;}
+  .group-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .group-table th{padding:8px 12px;text-align:left;color:var(--text3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);}
+  .group-table td{padding:9px 12px;border-bottom:1px solid var(--border)08;}
+  .group-table tr:last-child td{border-bottom:none;}
+  .group-table .team-name{font-weight:600;display:flex;align-items:center;gap:8px;}
+  .team-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+  .pts{font-weight:700;color:var(--accent);}
+  .classified{background:var(--accent)08;}
+ 
+  /* PARTIDOS */
+  .matches-list{display:flex;flex-direction:column;gap:1rem;}
+  .match-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.5rem;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1rem;transition:border-color .2s;}
+  .match-card:hover{border-color:var(--border2);}
+  .match-team{display:flex;align-items:center;gap:10px;}
+  .match-team.right{flex-direction:row-reverse;text-align:right;}
+  .team-avatar{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--accent);flex-shrink:0;}
+  .match-team .name{font-weight:600;font-size:14px;}
+  .match-team .sub{font-size:12px;color:var(--text2);}
+  .match-score{text-align:center;min-width:80px;}
+  .score-box{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:6px 12px;display:inline-flex;gap:8px;align-items:center;}
+  .score-box .s{font-size:1.4rem;font-weight:900;}
+  .score-box .sep{color:var(--text3);}
+  .match-meta{font-size:11px;color:var(--text3);margin-top:4px;text-align:center;}
+  .status-badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;}
+  .status-played{background:#00e67622;color:var(--green);}
+  .status-pending{background:#ffffff11;color:var(--text2);}
+  .status-live{background:#ff475722;color:var(--red);animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+ 
+  /* BRACKET */
+  .bracket-wrap{overflow-x:auto;padding-bottom:1rem;}
+  .bracket{display:flex;gap:2rem;align-items:stretch;}
+  .bracket-round{display:flex;flex-direction:column;justify-content:space-around;min-width:220px;}
+  .bracket-round-title{text-align:center;font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;padding:8px;background:var(--accent)10;border-radius:6px;margin-bottom:12px;}
+  .bracket-connector{width:10px;display:flex;flex-direction:column;justify-content:space-around;}
+  .bracket-match{background:var(--card);border:1px solid var(--border);border-radius:8px;margin:6px 0;overflow:hidden;}
+  .bracket-team{padding:8px 12px;font-size:13px;font-weight:600;display:flex;justify-content:space-between;gap:8px;}
+  .bracket-team:first-child{border-bottom:1px solid var(--border);}
+  .bracket-team .bscore{color:var(--accent);font-weight:700;}
+  .bracket-team.winner{background:var(--accent)12;}
+  .bracket-tbd{color:var(--text3);font-style:italic;font-weight:400;}
+ 
+  /* CLASIFICACION */
+  .standings-table{width:100%;border-collapse:collapse;font-size:14px;}
+  .standings-table th{padding:10px 12px;text-align:left;color:var(--text2);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);}
+  .standings-table td{padding:12px;border-bottom:1px solid var(--border)08;}
+  .standings-table tr:hover td{background:var(--bg3);}
+  .rank-num{font-weight:700;color:var(--text2);width:30px;}
+  .rank-1 .rank-num{color:var(--gold);}
+  .rank-2 .rank-num{color:#c0c0c0;}
+  .rank-3 .rank-num{color:#cd7f32;}
+  .form-dots{display:flex;gap:3px;}
+  .form-dot{width:18px;height:18px;border-radius:4px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .form-w{background:#00e67622;color:var(--green);}
+  .form-d{background:#ffd70022;color:var(--yellow);}
+  .form-l{background:#ff475722;color:var(--red);}
+ 
+  /* EQUIPOS */
+  .teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;}
+  .team-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;text-align:center;transition:border-color .2s,transform .2s;cursor:pointer;}
+  .team-card:hover{border-color:var(--accent)44;transform:translateY(-2px);}
+  .team-logo{width:64px;height:64px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;color:var(--accent);}
+  .team-card .tname{font-weight:700;font-size:15px;margin-bottom:4px;}
+  .team-card .tgroup{font-size:12px;color:var(--text2);}
+  .team-card .tstats{display:flex;justify-content:center;gap:1rem;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+  .team-card .tstat .v{font-weight:700;font-size:15px;}
+  .team-card .tstat .l{font-size:11px;color:var(--text2);}
+ 
+  /* MODAL JUGADORES */
+  .modal-overlay{display:none;position:fixed;inset:0;background:#00000088;z-index:200;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:2rem;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
+  .modal-header h3{font-size:1.2rem;font-weight:700;}
+  .modal-close{background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer;padding:0 4px;}
+  .player-list{display:flex;flex-direction:column;gap:8px;}
+  .player-row{display:flex;align-items:center;gap:12px;padding:10px;background:var(--card);border-radius:8px;}
+  .player-num{width:28px;height:28px;background:var(--accent)18;color:var(--accent);border-radius:6px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .player-info .pname{font-weight:600;font-size:13px;}
+  .player-info .ppos{font-size:11px;color:var(--text2);}
+ 
+  /* FOOTER */
+  footer{border-top:1px solid var(--border);padding:2rem;text-align:center;color:var(--text3);font-size:13px;margin-top:4rem;}
+ 
+  /* RESPONSIVE */
+  @media(max-width:700px){
+    nav ul{display:none;}
+    .hero h1{font-size:2.2rem;}
+    .hero-stats{gap:1.5rem;}
+    .match-card{grid-template-columns:1fr;gap:.5rem;}
+    .match-team.right{flex-direction:row;}
   }
-  .stat-box .stat-number {
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: var(--accent);
-    line-height: 1;
-  }
-  .stat-box .stat-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    color: var(--text2);
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-top: 5px;
-  }
-
-  /* NUEVA TARJETA DE CAMPEÓN PREMIUM */
-  .champion-showcase {
-    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
-    border: 2px solid var(--gold);
-    border-radius: 16px;
-    padding: 2.5rem;
-    text-align: center;
-    margin-bottom: 3rem;
-    display: none; 
-    animation: pulseGold 2s infinite alternate;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
-  }
-  @keyframes pulseGold {
-    0% { border-color: #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.1); }
-    100% { border-color: #f59e0b; box-shadow: 0 0 40px rgba(245, 158, 11, 0.3); }
-  }
-  .trophy-icon { font-size: 4.5rem; animation: float 3s ease-in-out infinite; display: inline-block; }
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-  .champion-title { font-size: 1.1rem; color: var(--gold); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-top: 1rem; }
-  .champion-name { font-size: 2.5rem; font-weight: 900; margin: 0.5rem 0; letter-spacing: -0.5px; color: #fff; }
-
-  /* COMPONENTES DE TABLAS DE GRUPOS */
-  .section-title{font-size:1.4rem;font-weight:800;margin-bottom:1.5rem;border-left:4px solid var(--accent);padding-left:12px;letter-spacing:-0.5px; display:flex; justify-content:space-between; align-items:center;}
-  .badge-status { font-size:10px; background:var(--accent); color:#000; padding:2px 8px; border-radius:4px; font-weight:800; text-transform:uppercase; }
-  
-  .grid-grupos{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:4rem;}
-  .grupo-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
-  .grupo-card h3{font-size:1.1rem;margin-bottom:1rem;color:var(--accent);}
-  
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  th{text-align:left;color:var(--text2);padding:8px;font-weight:600;border-bottom:1px solid var(--border2);}
-  td{padding:10px 8px;border-bottom:1px solid var(--border);}
-  tr:last-child td{border:none;}
-
-  /* FILTROS ORIGINALES (TODOS - JUGADOS - PENDIENTES) */
-  .filter-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 1.5rem;
-  }
-  .filter-btn {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    color: var(--text2);
-    padding: 6px 16px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .filter-btn.active, .filter-btn:hover {
-    background: var(--accent);
-    color: #000;
-    border-color: var(--accent);
-  }
-
-  /* TARJETAS DE PARTIDOS */
-  .matches-container{display:flex;flex-direction:column;gap:12px;margin-bottom:4rem;}
-  .match-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.5rem;display:grid;grid-template-columns:2fr 1fr 2fr;align-items:center;text-align:center;}
-  .match-team{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .match-team.left{text-align:right; padding-right:15px;}
-  .match-team.right{text-align:left; padding-left:15px;}
-  .match-score-block{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--bg2);padding:6px 16px;border-radius:20px;width:fit-content;margin:0 auto;border:1px solid var(--border2);}
-  .match-score{font-weight:900;font-size:16px;color:#fff;}
-  .match-score.pending{color:var(--text3);font-size:13px;font-weight:500;}
-  .phase-badge{background:var(--bg3);color:var(--text2);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;margin-bottom:4px;display:inline-block;}
 </style>
 </head>
 <body>
-
-<div class="container">
-  
-  <div id="champion-banner" class="champion-showcase">
-    <div class="trophy-icon">🏆</div>
-    <div class="champion-title">¡Campeón Absoluto!</div>
-    <div id="champion-team-text" class="champion-name">-</div>
-    <p style="color: var(--text2); font-size: 13px;">Se corona ganador oficial tras vencer en la gran final del torneo.</p>
+ 
+<nav>
+  <div class="nav-logo">
+    <div class="ball">⚽</div>
+    <span id="nav-title">Santiago <em>Cup</em></span>
   </div>
-
-  <div class="header-zone">
-    <span id="txt-season">Temporada 2025-26</span>
-    <h1 id="txt-name">Santiago Cup</h1>
-    <p id="txt-desc">Sigue en tiempo real todos los partidos, grupos y la clasificación del torneo.</p>
+  <ul>
+    <li><a href="#grupos" class="nav-link">Grupos</a></li>
+    <li><a href="#partidos" class="nav-link">Partidos</a></li>
+    <li><a href="#bracket" class="nav-link">Eliminatorias</a></li>
+    <li><a href="#clasificacion" class="nav-link">Clasificación</a></li>
+    <li><a href="#equipos" class="nav-link">Equipos</a></li>
+    <li><a href="admin.html" class="nav-admin">⚙ Admin</a></li>
+  </ul>
+</nav>
+ 
+<div class="hero">
+  <div class="hero-badge" id="hero-badge">Temporada 2025-26</div>
+  <h1 id="hero-title-container"><span>Santiago Cup</span></h1>
+  <p id="hero-desc">Sigue en tiempo real todos los partidos, grupos y la clasificación del torneo.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num" id="stat-teams">8</div><div class="lbl">Equipos</div></div>
+    <div class="hero-stat"><div class="num" id="stat-matches">0</div><div class="lbl">Partidos</div></div>
+    <div class="hero-stat"><div class="num" id="stat-goals">0</div><div class="lbl">Goles</div></div>
+    <div class="hero-stat"><div class="num" id="stat-groups">2</div><div class="lbl">Grupos</div></div>
   </div>
-
-  <div class="stats-counter-row">
-    <div class="stat-box"><div id="count-teams" class="stat-number">0</div><div class="stat-label">Equipos</div></div>
-    <div class="stat-box"><div id="count-matches" class="stat-number">0</div><div class="stat-label">Partidos</div></div>
-    <div class="stat-box"><div id="count-goals" class="stat-number">0</div><div class="stat-label">Goles</div></div>
-    <div class="stat-box"><div class="stat-number" style="color:var(--accent);">2</div><div class="stat-label">Grupos</div></div>
-  </div>
-
-  <div class="section-title">Fase de Grupos <span class="badge-status">En Juego</span></div>
-  <div class="grid-grupos">
-    <div class="grupo-card">
-      <h3>Grupo A</h3>
-      <table>
-        <thead><tr><th>Club</th><th style="text-align:center;">PJ</th><th style="text-align:center;">GF</th><th style="text-align:center;">GC</th><th style="text-align:center;">PTS</th></tr></thead>
-        <tbody id="tabla-grupo-A"></tbody>
-      </table>
-    </div>
-    <div class="grupo-card">
-      <h3>Grupo B</h3>
-      <table>
-        <thead><tr><th>Club</th><th style="text-align:center;">PJ</th><th style="text-align:center;">GF</th><th style="text-align:center;">GC</th><th style="text-align:center;">PTS</th></tr></thead>
-        <tbody id="tabla-grupo-B"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section-title">Partidos</div>
-  <div class="filter-bar">
-    <button class="filter-btn active" onclick="filtrarPartidos('todos', this)">Todos</button>
-    <button class="filter-btn" onclick="filtrarPartidos('jugados', this)">Jugados</button>
-    <button class="filter-btn" onclick="filtrarPartidos('pendientes', this)">Pendientes</button>
-  </div>
-  <div id="global-matches-list" class="matches-container"></div>
-
-  <div class="section-title">Eliminatorias <span class="badge-status" style="background:var(--accent); color:#000;">Cruces Automáticos</span></div>
-  <div id="eliminatorias-matches-list" class="matches-container"></div>
-
 </div>
-
+ 
+<section class="section" id="grupos">
+  <div class="section-header">
+    <h2>Fase de Grupos</h2>
+    <div class="line"></div>
+    <div class="badge">En juego</div>
+  </div>
+  <div class="groups-grid" id="groups-container"></div>
+</section>
+ 
+<section class="section" id="partidos">
+  <div class="section-header">
+    <h2>Partidos</h2>
+    <div class="line"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="filterMatches('all',this)">Todos</button>
+    <button class="tab" onclick="filterMatches('played',this)">Jugados</button>
+    <button class="tab" onclick="filterMatches('pending',this)">Pendientes</button>
+  </div>
+  <div class="matches-list" id="matches-container"></div>
+</section>
+ 
+<section class="section" id="bracket">
+  <div class="section-header">
+    <h2>Eliminatorias</h2>
+    <div class="line"></div>
+    <div class="badge">Cruces Automáticos</div>
+  </div>
+  <div class="bracket-wrap">
+    <div class="bracket" id="bracket-container"></div>
+  </div>
+</section>
+ 
+<section class="section" id="clasificacion">
+  <div class="section-header">
+    <h2>Clasificación General</h2>
+    <div class="line"></div>
+  </div>
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <table class="standings-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Equipo</th>
+          <th>PJ</th>
+          <th>G</th>
+          <th>E</th>
+          <th>P</th>
+          <th>GF</th>
+          <th>GC</th>
+          <th>DG</th>
+          <th>Pts</th>
+          <th>Forma</th>
+        </tr>
+      </thead>
+      <tbody id="standings-body"></tbody>
+    </table>
+  </div>
+</section>
+ 
+<section class="section" id="equipos">
+  <div class="section-header">
+    <h2>Equipos</h2>
+    <div class="line"></div>
+  </div>
+  <div class="teams-grid" id="teams-container"></div>
+</section>
+ 
+<footer>
+  <p>⚽ Santiago Cup &mdash; Creado con HTML, CSS y JavaScript</p>
+</footer>
+ 
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-content">
+    <div class="modal-header">
+      <h3 id="modal-title">Jugadores</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="player-list" id="modal-players"></div>
+  </div>
+</div>
+ 
 <script>
-// Forzar sincronización limpia
-function cargarEstadoTorneo(){
-  const guardado = localStorage.getItem('torneoData');
-  if(guardado) return JSON.parse(guardado);
+function getData(){
+  try{
+    const d=localStorage.getItem('torneoData');
+    if(d)return JSON.parse(d);
+  }catch(e){}
+  
   return {
-    config: typeof DB_CONFIG !== 'undefined' ? DB_CONFIG : {name:"Santiago Cup", season:"Temporada 2025-26", desc:""},
+    config: typeof DB_CONFIG !== 'undefined' ? DB_CONFIG : {name:"Santiago Cup", season:"Temporada 2025-26", desc:"Sigue en tiempo real todos los partidos, grupos y la clasificación del torneo."},
     teams: typeof DB_TEAMS !== 'undefined' ? DB_TEAMS : [],
-    matches: typeof DB_MATCHES !== 'undefined' ? DB_MATCHES : []
+    matches: typeof DB_MATCHES !== 'undefined' ? DB_MATCHES : [],
+    bracket: typeof DB_BRACKET !== 'undefined' ? DB_BRACKET : {quarters:[], semis:[], final:[]}
   };
 }
-
-const data = cargarEstadoTorneo();
-let filtroActual = 'todos';
-
-// Inyectar textos de la configuración de forma dinámica
-document.getElementById('txt-name').innerHTML = data.config.name.replace(/Cup/g, "<em>Cup</em>") || 'Santiago <em>Cup</em>';
-document.getElementById('txt-season').textContent = data.config.season || 'Temporada';
-document.getElementById('txt-desc').textContent = data.config.desc || '';
-
-// Calcular tablas de clasificación en tiempo real
-function procesarGrupo(letraGrupo) {
-  const equipos = data.teams.filter(t => t.group === letraGrupo);
-  const estadisticas = equipos.map(t => {
-    let pj=0, pts=0, gf=0, gc=0;
-    data.matches.forEach(m => {
-      if(!m.played || m.homeScore === null || (m.phase && m.phase !== 'Grupo')) return;
-      if(m.home === t.id){
-        pj++; gf += m.homeScore; gc += m.awayScore;
-        if(m.homeScore > m.awayScore) pts += 3;
-        else if(m.homeScore === m.awayScore) pts += 1;
-      }
-      if(m.away === t.id){
-        pj++; gf += m.awayScore; gc += m.homeScore;
-        if(m.awayScore > m.homeScore) pts += 3;
-        else if(m.homeScore === m.awayScore) pts += 1;
-      }
+ 
+let allMatches=[];
+ 
+function getTeam(id,teams){return teams.find(t=>t.id===id);}
+function initials(name){if(!name)return '?';return name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
+function colorFor(id){const colors=['#00d4ff','#00e676','#ffd700','#ff6b6b','#a78bfa','#fb923c','#34d399','#f472b6'];return colors[(id-1)%colors.length];}
+ 
+function getGroupStandings(grupo, data) {
+  const teams = data.teams.filter(t=>t.group===grupo);
+  return teams.map(t=>{
+    let pj=0,ganos=0,emp=0,per=0,gf=0,gc=0;
+    data.matches.forEach(m=>{
+      if(!m.played||m.homeScore===null||(m.phase && m.phase !== 'Grupo'))return;
+      if(m.home===t.id){pj++;gf+=m.homeScore;gc+=m.awayScore;if(m.homeScore>m.awayScore)ganos++;else if(m.homeScore===m.awayScore)emp++;else per++;}
+      if(m.away===t.id){pj++;gf+=m.awayScore;gc+=m.homeScore;if(m.awayScore>m.homeScore)ganos++;else if(m.homeScore===m.awayScore)emp++;else per++;}
     });
-    return { ...t, pj, gf, gc, pts, dg: gf - gc };
-  });
-  return estadisticas.sort((a,b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+    return{...t,pj,pts:ganos*3+emp,gf,gc,dg:gf-gc};
+  }).sort((a,b)=>b.pts-a.pts||b.dg-a.dg);
 }
 
-// Pintar filas de las tablas
-function renderTablas(){
-  ['A', 'B'].forEach(grupo => {
-    const clasificados = procesarGrupo(grupo);
-    const tbody = document.getElementById('tabla-grupo-' + grupo);
-    tbody.innerHTML = clasificados.map((t, index) => {
-      const destaque = index < 2 ? 'style="font-weight:700; color:var(--accent);"' : '';
-      return `
-        <tr>
-          <td ${destaque}>${index + 1}. ${t.name}</td>
-          <td style="text-align:center;">${t.pj}</td>
-          <td style="text-align:center; color:var(--text2);">${t.gf}</td>
-          <td style="text-align:center; color:var(--text2);">${t.gc}</td>
-          <td style="text-align:center; font-weight:700;">${t.pts}</td>
-        </tr>
-      `;
-    }).join('');
-  });
+function renderGroups(data){
+  const container=document.getElementById('groups-container');
+  if(!container) return;
+  const groups=['A','B'];
+  container.innerHTML=groups.map(g=>{
+    const stats = getGroupStandings(g, data);
+    return `<div class="group-card">
+      <div class="group-header"><div class="group-letter">${g}</div><span>Grupo ${g}</span></div>
+      <table class="group-table">
+        <thead><tr><th>Equipo</th><th>PJ</th><th>GF</th><th>Pts</th></tr></thead>
+        <tbody>${stats.map((t,i)=>`<tr class="${i<2?'classified':''}">
+          <td><span class="team-name"><span class="team-dot" style="background:${colorFor(t.id)}"></span>${t.name}</span></td>
+          <td>${t.pj}</td><td>${t.gf}</td><td class="pts">${t.pts}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  }).join('');
 }
-
-// Lógica de los contadores numéricos superiores
-function actualizarContadores() {
-  document.getElementById('count-teams').textContent = data.teams.length;
+ 
+function renderMatches(data,filter='all'){
+  const container=document.getElementById('matches-container');
+  if(!container) return;
+  let ms=[...data.matches];
+  if(filter==='played')ms=ms.filter(m=>m.played);
+  if(filter==='pending')ms=ms.filter(m=>!m.played);
+  allMatches=ms;
   
-  let partidosJugados = 0;
-  let totalGoles = 0;
-  data.matches.forEach(m => {
-    if(m.played) {
-      partidosJugados++;
-      totalGoles += (m.homeScore || 0) + (m.awayScore || 0);
-    }
-  });
+  container.innerHTML=ms.map(m=>{
+    const home=getTeam(m.home,data.teams) || {name: 'Por definir'};
+    const away=getTeam(m.away,data.teams) || {name: 'Por definir'};
+    
+    const status=m.played?`<span class="status-badge status-played">Jugado</span>`:`<span class="status-badge status-pending">Pendiente</span>`;
+    const score=m.played&&m.homeScore!==null
+      ?`<div class="score-box"><span class="s" style="color:${m.homeScore>m.awayScore?'var(--green)':m.homeScore<m.awayScore?'var(--red)':'var(--text)'}">${m.homeScore}</span><span class="sep">—</span><span class="s" style="color:${m.awayScore>m.homeScore?'var(--green)':m.awayScore<m.homeScore?'var(--red)':'var(--text)'}">${m.awayScore}</span></div>`
+      :`<div class="score-box"><span style="color:var(--text2);font-size:1rem;font-weight:600">VS</span></div>`;
+    
+    let faseTexto = m.phase || "Grupo";
+    if(faseTexto.includes("Cuartos")) faseTexto = "🏆 Cuartos de Final";
+    if(faseTexto.includes("Semifinal")) faseTexto = "🔥 Semifinales";
+    if(faseTexto.includes("Final")) faseTexto = "👑 Gran Final";
+    if(faseTexto === "Grupo") faseTexto = `Grupo ${getTeam(m.home, data.teams)?.group || 'A'}`;
+
+    return `<div class="match-card">
+      <div class="match-team">
+        <div class="team-avatar" style="border-color:${home.id?colorFor(home.id):'var(--border2)'};color:${home.id?colorFor(home.id):'var(--text2)'}">${initials(home.name)}</div>
+        <div><div class="name">${home.name}</div><div class="sub">Local</div></div>
+      </div>
+      <div class="match-score">${score}<div class="match-meta">${faseTexto} · ${m.date || ''}</div><div style="margin-top:4px">${status}</div></div>
+      <div class="match-team right">
+        <div class="team-avatar" style="border-color:${away.id?colorFor(away.id):'var(--border2)'};color:${away.id?colorFor(away.id):'var(--text2)'}">${initials(away.name)}</div>
+        <div><div class="name">${away.name}</div><div class="sub">Visitante</div></div>
+      </div>
+    </div>`;
+  }).join('');
+  if(!container.innerHTML.trim()) container.innerHTML='<p style="color:var(--text2);text-align:center;padding:2rem">No hay partidos que mostrar.</p>';
+}
+ 
+function renderBracket(data){
+  const container=document.getElementById('bracket-container');
+  if(!container) return;
   
-  document.getElementById('count-matches').textContent = partidosJugados;
-  document.getElementById('count-goals').textContent = totalGoles;
-}
-
-// Generador de lluvia de confeti en abanicos laterales
-function lanzarConfetiCelebracion() {
-  const duracion = 4 * 1000;
-  const fin = Date.now() + duracion;
-  (function frame() {
-    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 0.8 } });
-    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 0.8 } });
-    if (Date.now() < fin) { requestAnimationFrame(frame); }
-  }());
-}
-
-// Cambiar filtro de vista de partidos
-function filtrarPartidos(tipo, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  filtroActual = tipo;
-  renderPartidosYCruces();
-}
-
-// Renderizador unificado para el fixture completo
-function renderPartidosYCruces(){
-  const containerGrupos = document.getElementById('global-matches-list');
-  const containerEliminatorias = document.getElementById('eliminatorias-matches-list');
+  const standingsA = getGroupStandings('A', data);
+  const standingsB = getGroupStandings('B', data);
   
-  const clasificadosA = procesarGrupo('A');
-  const clasificadosB = procesarGrupo('B');
   const grupoMatches = data.matches.filter(m => !m.phase || m.phase === 'Grupo');
   const grupoTerminado = grupoMatches.length > 0 && grupoMatches.every(m => m.played);
 
-  // Mapear posiciones para semifinales
-  const t1A = grupoTerminado && clasificadosA[0] ? clasificadosA[0] : { name: "1º Grupo A", id: null };
-  const t2A = grupoTerminado && clasificadosA[1] ? clasificadosA[1] : { name: "2º Grupo A", id: null };
-  const t1B = grupoTerminado && clasificadosB[0] ? clasificadosB[0] : { name: "1º Grupo B", id: null };
-  const t2B = grupoTerminado && clasificadosB[1] ? clasificadosB[1] : { name: "2º Grupo B", id: null };
+  const t1A = grupoTerminado && standingsA[0] ? standingsA[0] : { name: "1º Grupo A", id: null };
+  const t2A = grupoTerminado && standingsA[1] ? standingsA[1] : { name: "2º Grupo A", id: null };
+  const t1B = grupoTerminado && standingsB[0] ? standingsB[0] : { name: "1º Grupo B", id: null };
+  const t2B = grupoTerminado && standingsB[1] ? standingsB[1] : { name: "2º Grupo B", id: null };
 
-  const semi1Match = data.matches.find(m => m.phase === 'Semifinal 1');
-  const semi2Match = data.matches.find(m => m.phase === 'Semifinal 2');
+  const semi1Match = data.matches.find(m => m.phase === 'Semifinal 1') || { homeScore: null, awayScore: null, played: false };
+  const semi2Match = data.matches.find(m => m.phase === 'Semifinal 2') || { homeScore: null, awayScore: null, played: false };
+  const finalMatch = data.matches.find(m => m.phase === 'Final') || { homeScore: null, awayScore: null, played: false };
 
-  let ganadorSemi1 = "Ganador Semifinal 1";
-  if(semi1Match && semi1Match.played && semi1Match.homeScore !== null) {
-    ganadorSemi1 = semi1Match.homeScore > semi1Match.awayScore ? t1A.name : t2B.name;
+  let ganadorSemi1 = { name: "Ganador Semifinal 1", id: null };
+  if(semi1Match.played && semi1Match.homeScore !== null && semi1Match.awayScore !== null) {
+    if(semi1Match.homeScore > semi1Match.awayScore) ganadorSemi1 = t1A;
+    else if(semi1Match.awayScore > semi1Match.homeScore) ganadorSemi1 = t2B;
   }
-  let ganadorSemi2 = "Ganador Semifinal 2";
-  if(semi2Match && semi2Match.played && semi2Match.homeScore !== null) {
-    ganadorSemi2 = semi2Match.homeScore > semi2Match.awayScore ? t1B.name : t2A.name;
-  }
-
-  // Activar Campeón y lanzar confeti
-  const finalMatch = data.matches.find(m => m.phase === 'Final');
-  if(finalMatch && finalMatch.played && finalMatch.homeScore !== null && finalMatch.awayScore !== null) {
-    const clubCampeon = finalMatch.homeScore > finalMatch.awayScore ? ganadorSemi1 : ganadorSemi2;
-    document.getElementById('champion-team-text').textContent = clubCampeon;
-    document.getElementById('champion-banner').style.display = 'block';
-    lanzarConfetiCelebracion();
-  } else {
-    document.getElementById('champion-banner').style.display = 'none';
+  
+  let ganadorSemi2 = { name: "Ganador Semifinal 2", id: null };
+  if(semi2Match.played && semi2Match.homeScore !== null && semi2Match.awayScore !== null) {
+    if(semi2Match.homeScore > semi2Match.awayScore) ganadorSemi2 = t1B;
+    else if(semi2Match.awayScore > semi2Match.homeScore) ganadorSemi2 = t2A;
   }
 
-  // Construir HTML de tarjetas
-  let htmlGrupos = '';
-  let htmlEliminatorias = '';
-
-  data.matches.forEach(m => {
-    let locName = "Por definir", visName = "Por definir";
-    let esEliminatoria = m.phase && m.phase !== 'Grupo';
-
-    // Aplicar filtros a partidos de grupos
-    if(!esEliminatoria) {
-      if(filtroActual === 'jugados' && !m.played) return;
-      if(filtroActual === 'pendientes' && m.played) return;
-    }
-
-    if(!m.phase || m.phase === 'Grupo') {
-      const h = data.teams.find(t => t.id === m.home);
-      const a = data.teams.find(t => t.id === m.away);
-      locName = h ? h.name : 'Desconocido';
-      visName = a ? a.name : 'Desconocido';
-    } else if(m.phase === 'Semifinal 1') { locName = t1A.name; visName = t2B.name; } 
-      else if(m.phase === 'Semifinal 2') { locName = t1B.name; visName = t2A.name; } 
-      else if(m.phase === 'Final') { locName = ganadorSemi1; visName = ganadorSemi2; }
-
-    const marcadorText = m.played && m.homeScore !== null 
-      ? `<span class="match-score">${m.homeScore}</span> <span>—</span> <span class="match-score">${m.awayScore}</span>`
-      : `<span class="match-score pending">Pendiente</span>`;
-
-    const cardHTML = `
-      <div class="match-card">
-        <div class="match-team left">${locName}</div>
-        <div>
-          <span class="phase-badge">${!m.phase || m.phase === 'Grupo' ? 'Fase de Grupos' : m.phase}</span>
-          <div class="match-score-block">${marcadorText}</div>
+  container.innerHTML = `
+    <div class="bracket-round">
+      <div class="bracket-round-title">Semifinales</div>
+      <div class="bracket-match">
+        <div class="bracket-team ${semi1Match.played && semi1Match.homeScore > semi1Match.awayScore ? 'winner' : ''}">
+          <span class="${!t1A.id ? 'bracket-tbd' : ''}">${t1A.name}</span>
+          <span class="bscore">${semi1Match.homeScore !== null ? semi1Match.homeScore : '-'}</span>
         </div>
-        <div class="match-team right">${visName}</div>
+        <div class="bracket-team ${semi1Match.played && semi1Match.awayScore > semi1Match.homeScore ? 'winner' : ''}">
+          <span class="${!t2B.id ? 'bracket-tbd' : ''}">${t2B.name}</span>
+          <span class="bscore">${semi1Match.awayScore !== null ? semi1Match.awayScore : '-'}</span>
+        </div>
       </div>
-    `;
-
-    if(esEliminatoria) {
-      htmlEliminatorias += cardHTML;
-    } else {
-      htmlGrupos += cardHTML;
-    }
-  });
-
-  containerGrupos.innerHTML = htmlGrupos || '<div style="text-align:center; color:var(--text3); font-size:13px; padding:1rem;">No hay partidos en este filtro</div>';
-  containerEliminatorias.innerHTML = htmlEliminatorias;
+      <div class="bracket-match">
+        <div class="bracket-team ${semi2Match.played && semi2Match.homeScore > semi2Match.awayScore ? 'winner' : ''}">
+          <span class="${!t1B.id ? 'bracket-tbd' : ''}">${t1B.name}</span>
+          <span class="bscore">${semi2Match.homeScore !== null ? semi2Match.homeScore : '-'}</span>
+        </div>
+        <div class="bracket-team ${semi2Match.played && semi2Match.awayScore > semi2Match.homeScore ? 'winner' : ''}">
+          <span class="${!t2A.id ? 'bracket-tbd' : ''}">${t2A.name}</span>
+          <span class="bscore">${semi2Match.awayScore !== null ? semi2Match.awayScore : '-'}</span>
+        </div>
+      </div>
+    </div>
+    <div class="bracket-connector"></div>
+    <div class="bracket-round">
+      <div class="bracket-round-title">Gran Final</div>
+      <div class="bracket-match">
+        <div class="bracket-team ${finalMatch.played && finalMatch.homeScore > finalMatch.awayScore ? 'winner' : ''}">
+          <span class="${!ganadorSemi1.id ? 'bracket-tbd' : ''}">${ganadorSemi1.name}</span>
+          <span class="bscore">${finalMatch.homeScore !== null ? finalMatch.homeScore : '-'}</span>
+        </div>
+        <div class="bracket-team ${finalMatch.played && finalMatch.awayScore > finalMatch.homeScore ? 'winner' : ''}">
+          <span class="${!ganadorSemi2.id ? 'bracket-tbd' : ''}">${ganadorSemi2.name}</span>
+          <span class="bscore">${finalMatch.awayScore !== null ? finalMatch.awayScore : '-'}</span>
+        </div>
+      </div>
+    </div>
+  `;
 }
-
-// Lanzar el sistema completo
-renderTablas();
-actualizarContadores();
-renderPartidosYCruces();
+ 
+function renderStandings(data){
+  const tbody=document.getElementById('standings-body');
+  if(!tbody) return;
+  const stats=data.teams.map(t=>{
+    let pj=0,g=0,e=0,p=0,gf=0,gc=0,form=[];
+    data.matches.forEach(m=>{
+      if(!m.played||m.homeScore===null||!m.home||!m.away)return;
+      if(m.home===t.id){pj++;gf+=m.homeScore;gc+=m.awayScore;if(m.homeScore>m.awayScore){g++;form.push('W');}else if(m.homeScore===m.awayScore){e++;form.push('D');}else{p++;form.push('L');}}
+      if(m.away===t.id){pj++;gf+=m.awayScore;gc+=m.homeScore;if(m.awayScore>m.homeScore){g++;form.push('W');}else if(m.homeScore===m.awayScore){e++;form.push('D');}else{p++;form.push('L');}}
+    });
+    return{...t,pj,g,e,p,gf,gc,dg:gf-gc,pts:g*3+e,form:form.slice(-5)};
+  }).sort((a,b)=>b.pts-a.pts||b.dg-a.dg);
+ 
+  tbody.innerHTML=stats.map((t,i)=>`<tr class="rank-${i+1}">
+    <td class="rank-num">${i+1}</td>
+    <td><div style="display:flex;align-items:center;gap:8px"><div class="team-avatar" style="width:28px;height:28px;font-size:11px;border-color:${colorFor(t.id)};color:${colorFor(t.id)}">${initials(t.name)}</div>${t.name}</div></td>
+    <td>${t.pj}</td><td>${t.g}</td><td>${t.e}</td><td>${t.p}</td>
+    <td>${t.gf}</td><td>${t.gc}</td>
+    <td style="color:${t.dg>0?'var(--green)':t.dg<0?'var(--red)':'var(--text)'}">${t.dg>0?'+':''}${t.dg}</td>
+    <td style="font-weight:700;color:var(--accent)">${t.pts}</td>
+    <td><div class="form-dots">${t.form.map(f=>`<div class="form-dot form-${f.toLowerCase()}">${f}</div>`).join('')}</div></td>
+  </tr>`).join('');
+}
+ 
+function renderTeams(data){
+  const container=document.getElementById('teams-container');
+  if(!container) return;
+  container.innerHTML=data.teams.map(t=>{
+    let goles=0,pj=0;
+    data.matches.forEach(m=>{
+      if(!m.played||m.homeScore===null)return;
+      if(m.home===t.id){pj++;goles+=m.homeScore;}
+      if(m.away===t.id){pj++;goles+=m.awayScore;}
+    });
+    return `<div class="team-card" onclick="openTeam(${t.id})">
+      <div class="team-logo" style="color:${colorFor(t.id)};border-color:${colorFor(t.id)}44">${initials(t.name)}</div>
+      <div class="tname">${t.name}</div>
+      <div class="tgroup">Grupo ${t.group}</div>
+      <div class="tstats">
+        <div class="tstat"><div class="v">${pj}</div><div class="l">Partidos</div></div>
+        <div class="tstat"><div class="v">${goles}</div><div class="l">Goles</div></div>
+        <div class="tstat"><div class="v">${t.players?t.players.length:0}</div><div class="l">Jugadores</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+ 
+function renderStats(data){
+  let totalGoals=0,totalMatches=0;
+  data.matches.forEach(m=>{if(m.played&&m.homeScore!==null){totalGoals+=m.homeScore+m.awayScore;totalMatches++;}});
+  const sTeams=document.getElementById('stat-teams');
+  const sMatches=document.getElementById('stat-matches');
+  const sGoals=document.getElementById('stat-goals');
+  const sGroups=document.getElementById('stat-groups');
+  if(sTeams) sTeams.textContent=data.teams.length;
+  if(sMatches) sMatches.textContent=totalMatches;
+  if(sGoals) sGoals.textContent=totalGoals;
+  if(sGroups) sGroups.textContent=[...new Set(data.teams.map(t=>t.group))].length;
+}
+ 
+function renderConfig(data){
+  if(data.config){
+    document.title=data.config.name||'Santiago Cup';
+    const nTitle=document.getElementById('nav-title');
+    const hBadge=document.getElementById('hero-badge');
+    const hContainer=document.getElementById('hero-title-container');
+    const hDesc=document.getElementById('hero-desc');
+    
+    if(nTitle) nTitle.innerHTML=data.config.name?data.config.name.replace(' ','<em style="color:var(--accent);font-style:normal"> ')+'</em>':'Santiago <em style="color:var(--accent);font-style:normal">Cup</em>';
+    if(hBadge) hBadge.textContent=data.config.season||'Temporada 2025-26';
+    if(hContainer) hContainer.innerHTML = `<span>${data.config.name || 'Santiago Cup'}</span>`;
+    if(hDesc && data.config.desc) hDesc.textContent=data.config.desc;
+  }
+}
+ 
+function filterMatches(type,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderMatches(getData(),type);
+}
+ 
+function openTeam(id){
+  const data=getData();
+  const team=data.teams.find(t=>t.id===id);
+  if(!team)return;
+  document.getElementById('modal-title').textContent=team.name;
+  const players=team.players||[];
+  document.getElementById('modal-players').innerHTML=players.length
+    ?players.map(p=>`<div class="player-row"><div class="player-num">${p.num}</div><div class="player-info"><div class="pname">${p.name}</div><div class="ppos">${p.pos}</div></div></div>`).join('')
+    :'<p style="color:var(--text2);text-align:center;padding:1rem">Sin jugadores registrados</p>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+ 
+function init(){
+  const data=getData();
+  renderConfig(data);
+  renderGroups(data);
+  renderMatches(data,'all');
+  renderBracket(data);
+  renderStandings(data);
+  renderTeams(data);
+  renderStats(data);
+}
+ 
+init();
+ 
+window.addEventListener('storage',()=>init());
 </script>
-
 </body>
 </html>
