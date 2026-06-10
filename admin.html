@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Administración - Torneo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+
+<script src="base_datos/config/data-config.js"></script>
+<script src="base_datos/equipos/data-equipos.js"></script>
+<script src="base_datos/partidos/data-partidos.js"></script>
+
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#0a0e1a;
+    --bg2:#111827;
+    --bg3:#1a2236;
+    --card:#151d2e;
+    --border:#ffffff14;
+    --border2:#ffffff22;
+    --accent:#00d4ff;
+    --text:#ffffff;
+    --text2:#8b9ab5;
+    --text3:#4a5568;
+    --green:#00e676;
+    --red:#ff4757;
+  }
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;padding:2rem;}
+  
+  /* PANTALLA DE LOGEO / CONTRASEÑA */
+  #login-screen{
+    position:fixed;inset:0;background:var(--bg);z-index:9999;
+    display:flex;align-items:center;justify-content:center;padding:1.5rem;
+    background: radial-gradient(circle at 50% 50%, #00d4ff10 0%, var(--bg) 70%);
+  }
+  .login-card{
+    background:var(--card);border:1px solid var(--border2);border-radius:16px;
+    padding:2.5rem;width:100%;max-width:400px;text-align:center;
+    box-shadow:0 20px 40px rgba(0,0,0,0.5);
+  }
+  .login-icon{font-size:3rem;margin-bottom:1rem;display:inline-block;}
+  .login-card h2{font-size:1.5rem;font-weight:900;margin-bottom:6px;letter-spacing:-0.5px;}
+  .login-card h2 span{color:var(--accent);}
+  .login-card p{color:var(--text2);font-size:13px;margin-bottom:2rem;}
+  .login-error{color:var(--red);font-size:12px;font-weight:600;margin-top:8px;display:none;}
+
+  /* CONTENIDO PRINCIPAL PANEL */
+  #admin-panel-content{display:none;}
+
+  .container{max-width:1000px;margin:0 auto;}
+  h1{font-size:1.8rem;font-weight:900;margin-bottom:1.5rem;letter-spacing:-0.5px;}
+  h1 span{color:var(--accent);}
+  
+  /* TABS */
+  .tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:4px;margin-bottom:2rem;width:fit-content;}
+  .tab{padding:10px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--text2);border:none;background:none;}
+  .tab.active{background:var(--accent);color:#000;}
+  
+  .tab-content{display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;}
+  .tab-content.active{display:block;}
+  
+  /* FORMS & INPUTS */
+  .form-group{margin-bottom:1.25rem;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+  input,textarea,select{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:#fff;font-family:inherit;font-size:14px;transition:border-color .2s;}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);}
+  
+  .btn-save{display:inline-block;background:var(--accent);color:#000;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;transition:opacity .2s;margin-top:1rem;}
+  .btn-save:hover{opacity:0.9;}
+
+  /* PARTIDOS EDICIÓN */
+  .match-edit-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem;display:grid;grid-template-columns:2fr 1fr 2fr auto;align-items:center;gap:1.5rem;}
+  .team-label{font-weight:600;font-size:14px;}
+  .team-label.right{text-align:right;}
+  .score-inputs{display:flex;align-items:center;justify-content:center;gap:8px;}
+  .score-inputs input{width:55px;text-align:center;font-weight:700;font-size:16px;padding:6px;}
+  .score-inputs span{color:var(--text3);font-weight:700;}
+  .match-info{font-size:11px;color:var(--text2);margin-top:4px;}
+  .check-played{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;}
+  .check-played input{width:auto;}
+
+  /* EQUIPOS LISTA */
+  .team-row{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;}
+  .team-info-block{display:flex;align-items:center;gap:12px;}
+  .team-badge-circle{width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--accent);}
+  .badge-fase{background:var(--accent);color:#000;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;text-transform:uppercase;margin-bottom:4px;display:inline-block;}
+
+  /* EDITOR DE EQUIPO INTERACTIVO */
+  .editor-panel{background:var(--bg2);border:1px solid var(--accent);border-radius:8px;padding:1.5rem;margin-bottom:1.5rem;display:none;}
+  .btn-action{background:var(--bg3);color:#fff;border:1px solid var(--border2);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;}
+  .btn-action:hover{border-color:var(--accent);}
+  .player-edit-row{display:grid;grid-template-columns:60px 2fr 2fr auto;gap:8px;margin-bottom:6px;align-items:center;}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">🔒</div>
+    <h2>Santiago <span>Cup</span></h2>
+    <p>Introduce la clave de acceso del administrador</p>
+    
+    <div class="form-group" style="text-align:left;">
+      <label>Contraseña</label>
+      <input type="password" id="admin-pass-input" placeholder="••••••••" onkeydown="if(event.key==='Enter') validateAccess()">
+      <div id="login-error-msg" class="login-error">⚠️ Contraseña incorrecta. Inténtalo de nuevo.</div>
+    </div>
+    
+    <button class="btn-save" style="width:100%; margin-top:0.5rem;" onclick="validateAccess()">Ingresar al Panel</button>
+  </div>
+</div>
+
+<div id="admin-panel-content" class="container">
+  <h1>Panel de Control &mdash; <span>Santiago Cup</span></h1>
+  
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('general', this)">⚙ General</button>
+    <button class="tab" onclick="switchTab('equipos', this)">🛡 Equipos y Jugadores</button>
+    <button class="tab" onclick="switchTab('partidos', this)">📅 Resultados Partidos</button>
+  </div>
+
+  <div id="tab-general" class="tab-content active">
+    <div class="form-group">
+      <label>Nombre del Torneo</label>
+      <input type="text" id="cfg-name" placeholder="Ej. Santiago Cup">
+    </div>
+    <div class="form-group">
+      <label>Temporada / Edición</label>
+      <input type="text" id="cfg-season" placeholder="Ej. Temporada 2026">
+    </div>
+    <div class="form-group">
+      <label>Descripción del campeonato</label>
+      <textarea id="cfg-desc" rows="3" placeholder="Breve texto informativo..."></textarea>
+    </div>
+    <button class="btn-save" onclick="saveGeneralConfig()">Guardar Configuración</button>
+  </div>
+
+  <div id="tab-equipos" class="tab-content">
+    <div id="team-editor-box" class="editor-panel">
+      <h4 id="editor-title" style="margin-bottom: 1rem; color:var(--accent);">Modificando Equipo</h4>
+      <input type="hidden" id="edit-team-id">
+      <div class="form-group">
+        <label>Nombre del Club</label>
+        <input type="text" id="edit-team-name">
+      </div>
+      <div class="form-group">
+        <label>Grupo Asignado</label>
+        <select id="edit-team-group">
+          <option value="A">Grupo A</option>
+          <option value="B">Grupo B</option>
+        </select>
+      </div>
+      
+      <label style="margin-top:1.5rem; margin-bottom:8px;">Plantilla de Jugadores</label>
+      <div id="editor-players-container" style="max-height:250px; overflow-y:auto; margin-bottom:1rem; padding-right:4px;"></div>
+      <button class="btn-action" style="background:transparent; border-color:var(--accent); color:var(--accent);" onclick="addNewPlayerRow()">+ Añadir Jugador</button>
+      
+      <div style="margin-top:2rem; display:flex; gap:10px; justify-content:flex-end;">
+        <button class="btn-action" onclick="closeTeamEditor()">Cancelar</button>
+        <button class="btn-save" style="margin-top:0;" onclick="saveTeamChanges()">Guardar Cambios del Equipo</button>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom:1rem; font-size:15px; color:var(--text2);">Selecciona un equipo para modificar</h3>
+    <div id="admin-teams-list"></div>
+  </div>
+
+  <div id="tab-partidos" class="tab-content">
+    <h3 style="margin-bottom:1.5rem; font-size:15px; color:var(--text2);">Introducir Marcadores (Grupos y Fase Final)</h3>
+    <div id="admin-matches-list"></div>
+    <button class="btn-save" style="width:100%; background:var(--green); font-size:14px; padding:12px;" onclick="saveAllMatches()">Guardar Todos los Resultados</button>
+  </div>
+</div>
+
+<script>
+// --- CONTROL DE ACCESO ---
+function validateAccess() {
+  const inputPass = document.getElementById('admin-pass-input').value;
+  const errorMsg = document.getElementById('login-error-msg');
+  
+  if (inputPass === 'darius') {
+    // Éxito: Ocultar login y mostrar panel
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-panel-content').style.display = 'block';
+    initAdmin(); // Iniciar la carga de datos del panel
+  } else {
+    // Error: Mostrar mensaje de alerta sutil
+    errorMsg.style.display = 'block';
+    document.getElementById('admin-pass-input').value = '';
+    document.getElementById('admin-pass-input').focus();
+  }
+}
+
+// --- MANEJO DE BASE DE DATOS LOCALSTORAGE ---
+function getTorneoData(){
+  try {
+    const local = localStorage.getItem('torneoData');
+    if(local) return JSON.parse(local);
+  } catch(e){}
+
+  return {
+    config: typeof DB_CONFIG !== 'undefined' ? DB_CONFIG : {name:"Santiago Cup", season:"Temporada 2025-26", desc:""},
+    teams: typeof DB_TEAMS !== 'undefined' ? DB_TEAMS : [],
+    matches: typeof DB_MATCHES !== 'undefined' ? DB_MATCHES : [],
+    bracket: typeof DB_BRACKET !== 'undefined' ? DB_BRACKET : {}
+  };
+}
+
+let estadoTorneo = getTorneoData();
+
+function switchTab(tabId, buttonElement) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  buttonElement.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+  closeTeamEditor();
+}
+
+// --- LOGICA CONFIGURACIÓN GENERAL ---
+function loadGeneralConfig(){
+  document.getElementById('cfg-name').value = estadoTorneo.config.name || '';
+  document.getElementById('cfg-season').value = estadoTorneo.config.season || '';
+  document.getElementById('cfg-desc').value = estadoTorneo.config.desc || '';
+}
+
+function saveGeneralConfig(){
+  estadoTorneo.config.name = document.getElementById('cfg-name').value;
+  estadoTorneo.config.season = document.getElementById('cfg-season').value;
+  estadoTorneo.config.desc = document.getElementById('cfg-desc').value;
+  
+  localStorage.setItem('torneoData', JSON.stringify(estadoTorneo));
+  alert('¡Configuración guardada con éxito!');
+}
+
+// --- LOGICA MODIFICACIÓN DE EQUIPOS ---
+function loadTeamsAdmin(){
+  const container = document.getElementById('admin-teams-list');
+  if(!container) return;
+  
+  container.innerHTML = estadoTorneo.teams.map(t => {
+    return `
+      <div class="team-row">
+        <div class="team-info-block">
+          <div class="team-badge-circle">${t.name.substring(0,2).toUpperCase()}</div>
+          <div>
+            <div style="font-weight:700; font-size:14px;">${t.name}</div>
+            <div style="font-size:12px; color:var(--text2)">Grupo asignado: <strong>${t.group || 'Sin Grupo'}</strong></div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:15px;">
+          <span style="font-size:12px; color:var(--text2);">${t.players ? t.players.length : 0} Jugadores</span>
+          <button class="btn-action" onclick="openTeamEditor(${t.id})">✏️ Modificar</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openTeamEditor(id){
+  const team = estadoTorneo.teams.find(t => t.id === id);
+  if(!team) return;
+  
+  document.getElementById('edit-team-id').value = team.id;
+  document.getElementById('edit-team-name').value = team.name;
+  document.getElementById('edit-team-group').value = team.group || 'A';
+  document.getElementById('editor-title').textContent = `Modificando: ${team.name}`;
+  
+  const playersContainer = document.getElementById('editor-players-container');
+  playersContainer.innerHTML = '';
+  
+  const listaJugadores = team.players || [];
+  listaJugadores.forEach(p => {
+    addPlayerRowHTML(p.num, p.name, p.pos);
+  });
+  
+  if(listaJugadores.length === 0) {
+    addNewPlayerRow();
+  }
+  
+  document.getElementById('team-editor-box').style.display = 'block';
+  window.scrollTo({ top: document.getElementById('team-editor-box').offsetTop - 20, behavior: 'smooth' });
+}
+
+function addPlayerRowHTML(num, name, pos){
+  const container = document.getElementById('editor-players-container');
+  const div = document.createElement('div');
+  div.className = 'player-edit-row';
+  div.innerHTML = `
+    <input type="number" class="p-num" value="${num}" placeholder="Nº" min="0">
+    <input type="text" class="p-name" value="${name}" placeholder="Nombre del Jugador">
+    <input type="text" class="p-pos" value="${pos}" placeholder="Posición (Ej: Delantero)">
+    <button class="btn-action" style="color:var(--red); border-color:rgba(255,71,87,0.3);" onclick="this.parentElement.remove()">❌</button>
+  `;
+  container.appendChild(div);
+}
+
+function addNewPlayerRow(){
+  addPlayerRowHTML('', '', '');
+}
+
+function closeTeamEditor(){
+  document.getElementById('team-editor-box').style.display = 'none';
+}
+
+function saveTeamChanges(){
+  const id = parseInt(document.getElementById('edit-team-id').value);
+  const index = estadoTorneo.teams.findIndex(t => t.id === id);
+  if(index === -1) return;
+  
+  estadoTorneo.teams[index].name = document.getElementById('edit-team-name').value;
+  estadoTorneo.teams[index].group = document.getElementById('edit-team-group').value;
+  
+  const rows = document.querySelectorAll('.player-edit-row');
+  const updatedPlayers = [];
+  
+  rows.forEach(row => {
+    const num = row.querySelector('.p-num').value;
+    const name = row.querySelector('.p-name').value;
+    const pos = row.querySelector('.p-pos').value;
+    
+    if(name.trim() !== "") {
+      updatedPlayers.push({
+        num: num || "0",
+        name: name,
+        pos: pos || "Portero/Jugador"
+      });
+    }
+  });
+  
+  estadoTorneo.teams[index].players = updatedPlayers;
+  
+  localStorage.setItem('torneoData', JSON.stringify(estadoTorneo));
+  alert('¡Equipo y plantilla actualizados correctamente!');
+  closeTeamEditor();
+  loadTeamsAdmin();
+  loadMatchesAdmin(); 
+}
+
+// --- LOGICA PARTIDOS ---
+function getGroupStandingsAdmin(grupo) {
+  const teams = estadoTorneo.teams.filter(t=>t.group===grupo);
+  return teams.map(t=>{
+    let pj=0,pts=0,gf=0,gc=0;
+    estadoTorneo.matches.forEach(m=>{
+      if(!m.played||m.homeScore===null||(m.phase && m.phase !== 'Grupo'))return;
+      if(m.home===t.id){pj++;gf+=m.homeScore;gc+=m.awayScore;if(m.homeScore>m.awayScore)pts+=3;else if(m.homeScore===m.awayScore)pts+=1;}
+      if(m.away===t.id){pj++;gf+=m.awayScore;gc+=m.homeScore;if(m.awayScore>m.homeScore)pts+=3;else if(m.homeScore===m.awayScore)pts+=1;}
+    });
+    return{...t,pts,dg:gf-gc};
+  }).sort((a,b)=>b.pts-a.pts||b.dg-a.dg);
+}
+
+function loadMatchesAdmin(){
+  const container = document.getElementById('admin-matches-list');
+  if(!container) return;
+
+  const standingsA = getGroupStandingsAdmin('A');
+  const standingsB = getGroupStandingsAdmin('B');
+  
+  const grupoMatches = estadoTorneo.matches.filter(m => !m.phase || m.phase === 'Grupo');
+  const grupoTerminado = grupoMatches.length > 0 && grupoMatches.every(m => m.played);
+
+  const t1A = grupoTerminado && standingsA[0] ? standingsA[0] : { name: "1º Grupo A", id: null };
+  const t2A = grupoTerminado && standingsA[1] ? standingsA[1] : { name: "2º Grupo A", id: null };
+  const t1B = grupoTerminado && standingsB[0] ? standingsB[0] : { name: "1º Grupo B", id: null };
+  const t2B = grupoTerminado && standingsB[1] ? standingsB[1] : { name: "2º Grupo B", id: null };
+
+  const semi1Match = estadoTorneo.matches.find(m => m.phase === 'Semifinal 1');
+  const semi2Match = estadoTorneo.matches.find(m => m.phase === 'Semifinal 2');
+
+  let ganadorSemi1 = "Ganador Semifinal 1";
+  if(semi1Match && semi1Match.played && semi1Match.homeScore !== null && semi1Match.awayScore !== null) {
+    ganadorSemi1 = semi1Match.homeScore > semi1Match.awayScore ? t1A.name : t2B.name;
+  }
+  let ganadorSemi2 = "Ganador Semifinal 2";
+  if(semi2Match && semi2Match.played && semi2Match.homeScore !== null && semi2Match.awayScore !== null) {
+    ganadorSemi2 = semi2Match.homeScore > semi2Match.awayScore ? t1B.name : t2A.name;
+  }
+
+  container.innerHTML = estadoTorneo.matches.map((m, index) => {
+    let localName = "Por definir", visitanteName = "Por definir";
+    
+    if(!m.phase || m.phase === 'Grupo'){
+      const h = estadoTorneo.teams.find(t=>t.id===m.home);
+      const a = estadoTorneo.teams.find(t=>t.id===m.away);
+      localName = h ? h.name : 'Desconocido';
+      visitanteName = a ? a.name : 'Desconocido';
+    } else if (m.phase === 'Semifinal 1') {
+      localName = t1A.name; visitanteName = t2B.name;
+    } else if (m.phase === 'Semifinal 2') {
+      localName = t1B.name; visitanteName = t2A.name;
+    } else if (m.phase === 'Final') {
+      localName = ganadorSemi1; visitanteName = ganadorSemi2;
+    }
+
+    let tituloFase = m.phase || "Fase de Grupos";
+
+    return `
+      <div class="match-edit-card" data-index="${index}">
+        <div>
+          <span class="badge-fase">${tituloFase}</span>
+          <div class="team-label">${localName}</div>
+          <div class="match-info">Fecha: ${m.date || 'Pendiente'} · Local</div>
+        </div>
+        
+        <div class="score-inputs">
+          <input type="number" class="input-home" min="0" oninput="if(this.value<0)this.value=0" value="${m.homeScore !== null ? m.homeScore : ''}" placeholder="-">
+          <span>—</span>
+          <input type="number" class="input-away" min="0" oninput="if(this.value<0)this.value=0" value="${m.awayScore !== null ? m.awayScore : ''}" placeholder="-">
+        </div>
+        
+        <div>
+          <div class="team-label right">${visitanteName}</div>
+          <div class="match-info" style="text-align:right;">Visitante</div>
+        </div>
+        
+        <div>
+          <label class="check-played">
+            <input type="checkbox" class="input-played" ${m.played ? 'checked' : ''}> Jugado
+          </label>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function saveAllMatches(){
+  const cards = document.querySelectorAll('.match-edit-card');
+  
+  cards.forEach(card => {
+    const index = parseInt(card.getAttribute('data-index'));
+    let homeVal = card.querySelector('.input-home').value;
+    let awayVal = card.querySelector('.input-away').value;
+    const playedChecked = card.querySelector('.input-played').checked;
+    
+    if(homeVal !== '' && awayVal !== '') {
+      let hScore = parseInt(homeVal);
+      let aScore = parseInt(awayVal);
+      estadoTorneo.matches[index].homeScore = hScore < 0 ? 0 : hScore;
+      estadoTorneo.matches[index].awayScore = aScore < 0 ? 0 : aScore;
+      estadoTorneo.matches[index].played = playedChecked;
+    } else {
+      estadoTorneo.matches[index].homeScore = null;
+      estadoTorneo.matches[index].awayScore = null;
+      estadoTorneo.matches[index].played = playedChecked;
+    }
+  });
+  
+  localStorage.setItem('torneoData', JSON.stringify(estadoTorneo));
+  alert('¡Todos los marcadores de los partidos se han actualizado correctamente!');
+  loadMatchesAdmin(); 
+}
+
+function initAdmin(){
+  loadGeneralConfig();
+  loadTeamsAdmin();
+  loadMatchesAdmin();
+}
+
+// Al arrancar, ponemos el foco automático en la caja de contraseña para agilizar el login
+document.getElementById('admin-pass-input').focus();
+</script>
+
+</body>
+</html>
